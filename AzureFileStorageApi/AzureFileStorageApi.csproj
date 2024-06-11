@@ -21,6 +21,8 @@
 
   <ItemGroup>
     <Folder Include="Azurite\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="__blobstorage__\" />
   </ItemGroup>
 
 </Project>
