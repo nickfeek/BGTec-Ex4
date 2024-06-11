@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using AzureFileStorageApi.Data;
-using AzureFileStorageApi.Models;
 
-namespace AzureFileStorageApi.Repositories
+namespace AzureFileStorageApi.Data
 {
     public class DataRepository : IDataRepository
     {
@@ -17,39 +15,28 @@ namespace AzureFileStorageApi.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<AzureFileStorageApi.Models.Data>> GetAllAsync()
+        public async Task<List<AzureFileStorageApi.Models.Data>> GetAllAsync()
         {
             return await _context.Data.ToListAsync();
         }
 
-        public async Task<AzureFileStorageApi.Models.Data> GetByIdAsync(int id)
+        public async Task<List<AzureFileStorageApi.Models.Data>> GetFilteredDataAsync(DateTime? startDate, DateTime? endDate)
         {
-            return await _context.Data.FindAsync(id);
+            IQueryable<AzureFileStorageApi.Models.Data> query = _context.Data;
+
+            if (startDate != null)
+                query = query.Where(data => data.TimestampProcessed.Date >= startDate.Value.Date);
+
+            if (endDate != null)
+                query = query.Where(data => data.TimestampProcessed.Date <= endDate.Value.Date);
+
+            return await query.ToListAsync();
         }
 
-        public async Task<AzureFileStorageApi.Models.Data> AddAsync(AzureFileStorageApi.Models.Data entity)
+        public async Task AddAsync(AzureFileStorageApi.Models.Data entity)
         {
             _context.Data.Add(entity);
             await _context.SaveChangesAsync();
-            return entity;
-        }
-
-        public async Task<AzureFileStorageApi.Models.Data> UpdateAsync(AzureFileStorageApi.Models.Data entity)
-        {
-            _context.Entry(entity).State = EntityState.Modified;
-            await _context.SaveChangesAsync();
-            return entity;
-        }
-
-        public async Task<bool> DeleteAsync(int id)
-        {
-            var entity = await _context.Data.FindAsync(id);
-            if (entity == null)
-                return false;
-
-            _context.Data.Remove(entity);
-            await _context.SaveChangesAsync();
-            return true;
         }
     }
 }
