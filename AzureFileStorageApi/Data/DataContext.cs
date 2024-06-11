@@ -13,6 +13,10 @@ namespace AzureFileStorageApi.Data
         // Configures the model for the database
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Create an index on the DateTime column
+            modelBuilder.Entity<AzureFileStorageApi.Models.Data>()
+            .HasIndex(d => d.TimestampProcessed);
+
             // Set default value and generation behavior for TimestampProcessed property
             modelBuilder.Entity<AzureFileStorageApi.Models.Data>()
                 .Property(d => d.TimestampProcessed)
