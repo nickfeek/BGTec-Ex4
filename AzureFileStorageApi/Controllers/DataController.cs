@@ -15,11 +15,11 @@ namespace AzureFileStorageApi.Controllers
     [Route("api/[controller]")]
     public class DataController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IDataRepository _dataRepository;
 
-        public DataController(DataContext context)
+        public DataController(IDataRepository dataRepository)
         {
-            _context = context;
+            _dataRepository = dataRepository;
         }
 
         public class DataRequest
@@ -83,8 +83,18 @@ namespace AzureFileStorageApi.Controllers
                         FilenameExtension = filenameExtension,
                         FilePath = filepath,
                     };
-                    _context.Data.Add(data);
-                    _context.SaveChanges();
+
+                    // Attempt to add the data to the repository
+                    try
+                    {
+                        await _dataRepository.AddAsync(data);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle exceptions related to database operations
+                        Console.WriteLine($"Database error occurred: {ex.Message}");
+                        return StatusCode(500, $"Database error: {ex.Message}");
+                    }
 
                     // Log successful file upload
                     Console.WriteLine("Image uploaded successfully.");
@@ -145,19 +155,12 @@ namespace AzureFileStorageApi.Controllers
         {
             try
             {
-                // Start building query for data retrieval
-                IQueryable<AzureFileStorageApi.Models.Data> query = _context.Data;
+                // Parse dates
+                DateTime? startDate = !string.IsNullOrEmpty(start_date) ? DateTime.Parse(start_date) : (DateTime?)null;
+                DateTime? endDate = !string.IsNullOrEmpty(end_date) ? DateTime.Parse(end_date) : (DateTime?)null;
 
-                // Filter data by start_date if provided
-                if (!string.IsNullOrEmpty(start_date) && DateTime.TryParse(start_date, out var startDate))
-                    query = query.Where(data => data.TimestampProcessed.Date >= startDate.Date);
-
-                // Filter data by end_date if provided
-                if (!string.IsNullOrEmpty(end_date) && DateTime.TryParse(end_date, out var endDate))
-                    query = query.Where(d => d.TimestampProcessed.Date <= endDate.Date);
-
-                // Execute the query and retrieve the data
-                var data = await query.ToListAsync();
+                // Retrieve data from the repository asynchronously
+                var data = await _dataRepository.GetFilteredDataAsync(startDate, endDate);
 
                 // Log successful retrieval of data
                 Console.WriteLine("Retrieved data successfully.");
@@ -177,5 +180,5 @@ namespace AzureFileStorageApi.Controllers
             // Return information about the API
             return Ok("This is a Azure Blob Storage file system.");
         }
-    }
+       }
 }
