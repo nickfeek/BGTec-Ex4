@@ -13,7 +13,11 @@ obj/
 # azurite
 __blobstorage__
 __queuestorage__
+
 /Azurite
+
+*.db-wal
+*.db-shm
 
 # Visual Studio Code
 .vscode/
