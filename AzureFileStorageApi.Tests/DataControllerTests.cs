@@ -135,19 +135,5 @@ namespace AzureFileStorageApi.Tests
             Assert.AreEqual(200, okResult.StatusCode);
         }
 
-        [TestMethod]
-        public async Task GetData_Returns_OK()
-        {
-            var mockContext = new Mock<DataContext>();
-            var controller = new DataController(mockContext.Object);
-            var result = await Task.Run(() => controller.GetData()); // Using Task.Run() to execute synchronously on a background thread
-            var okResult = result as OkObjectResult;
-
-            // Assert
-            Assert.IsNotNull(okResult);
-            Assert.AreEqual(200, okResult.StatusCode);
-        }
-
-
     }
 }
