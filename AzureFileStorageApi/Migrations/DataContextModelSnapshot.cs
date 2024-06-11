@@ -49,6 +49,8 @@ namespace AzureFileStorageApi.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TimestampProcessed");
+
                     b.ToTable("Data");
                 });
 #pragma warning restore 612, 618
